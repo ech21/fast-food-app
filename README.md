@@ -1,4 +1,5 @@
 # Fast food app DELIVERABLES
+
 1. Users can start challenge lobbies and join existing ones
 2. Show nearby fast food places with drive thrus
 3. Users can select them to add to the list and it will generate an optimal route (whatever optimal means)
@@ -15,3 +16,8 @@ step 4. aram
 
 1. Start react.js container (keep it local for now)
 2. Make a progressive web app
+
+
+# Development
+
+Start the server with `go run cmd/main.go`
