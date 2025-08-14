@@ -21,3 +21,14 @@ step 4. aram
 # Development
 
 Start the server with `go run cmd/main.go`
+
+## Hot reloading
+
+Using Air
+https://github.com/air-verse/air
+
+1. Follow steps to install air
+2. Make sure go bin is in $PATH (it is probably at "$(go env GOPATH)/bin")
+3. Run `air -c .air.toml` to link to the Air config file
+4. You can just run `air` to start it again once it is linked
+
