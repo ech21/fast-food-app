@@ -1,67 +1,90 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
+
+	"googlemaps.github.io/maps"
 )
 
 type mapSvc struct {
-	apiKey string
+	client *maps.Client
 }
 
-func (svc *mapSvc) getAvailableLocations(currentLocation string) getAvailableLocationsOutput {
-	fmt.Println("API: getAvailableLocations")
-	fmt.Printf("currentLocation: %s\n", currentLocation)
-	// TODO: send post req with
-	// -d '{ "textQuery": "THE QUERY" }'
-	// -H 'Context-Type: application/json'
-	// -H 'X-Goog-Api-Key: '
-	// resp, err := http.Post("https://places.googleapis.com/vi/places:searchText")
-	// if err != nil {
-	// 	return getAvailableLocationsOutput{
-	// 		Locations: []Location{},
-	// 		Err:       err,
-	// 	}
-	// }
-	// defer resp.Body.Close()
+// radius in meters (max 50000)
+func (svc *mapSvc) availableLocations(currentLocation *maps.LatLng, radius uint) availableLocationsOutput {
+	q := "Fast food restaurants with drive-throughs in Honolulu"
+	r := &maps.TextSearchRequest{
+		Query:    q,
+		Location: currentLocation,
+		Radius:   radius,
+	}
+	resp, err := svc.client.TextSearch(context.Background(), r)
+	if err != nil {
+		fmt.Println(err)
+		return availableLocationsOutput{
+			Locations: nil,
+			Err:       err,
+		}
+	}
+	// TODO: filter by drive-through hours if available
 
-	// body, err := io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return getAvailableLocationsOutput{
-	// 		Locations: []Location{},
-	// 		Err:       err,
-	// 	}
-	// }
-
-	// fmt.Println(string(body))
-
-	return getAvailableLocationsOutput{
-		Locations: []Location{},
+	return availableLocationsOutput{
+		Locations: toLoc(resp),
 		Err:       nil,
 	}
 }
 
 func (svc *mapSvc) attach(mux *http.ServeMux) {
-	mux.Handle("/api/getAvailableLocations", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cl := r.FormValue("currentLocation")
-		if len(cl) == 0 {
-			// missing arg
-			http.Error(w, "Missing query arg 'currentLocation'", http.StatusBadRequest)
+	fmt.Println("POST /api/availableLocations")
+	mux.HandleFunc("POST /api/availableLocations", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Hit: /api/availableLocations")
+		var bodyObj struct {
+			CurrentLocation struct {
+				Lat float64
+				Lng float64
+			}
+			Radius uint
+		}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "Error reading request body.", http.StatusInternalServerError)
 			return
 		}
-		out := svc.getAvailableLocations(cl)
+		err = json.Unmarshal(body, &bodyObj)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "Body could not be unmarshalled.", http.StatusInternalServerError)
+			return
+		}
+		// check fields
+		if bodyObj.CurrentLocation.Lat == 0.0 || bodyObj.CurrentLocation.Lng == 0.0 {
+			http.Error(w, "Missing in body 'currentLocation'", http.StatusBadRequest)
+			return
+		}
+		if bodyObj.Radius == 0 {
+			http.Error(w, "Missing in body 'radius' (in meters)", http.StatusBadRequest)
+			return
+		}
+		// call places api
+		out := svc.availableLocations(&maps.LatLng{
+			Lat: bodyObj.CurrentLocation.Lat,
+			Lng: bodyObj.CurrentLocation.Lng,
+		}, bodyObj.Radius)
 		jsonOut, err := json.Marshal(out)
 		if err != nil {
+			fmt.Println(err)
 			http.Error(w, "Data could not be marshalled into json.", http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(200)
 		w.Write(jsonOut)
-	}))
+	})
 }
 
 func newMapSvc() *mapSvc {
@@ -71,7 +94,27 @@ func newMapSvc() *mapSvc {
 		panic("Missing env var: GCP_API_KEY")
 	}
 	fmt.Println("Found env var GCP_API_KEY: " + apiKey)
-	return &mapSvc{
-		apiKey: apiKey,
+
+	// create maps client
+	c, err := maps.NewClient(maps.WithAPIKey(apiKey))
+	if err != nil {
+		panic(err)
 	}
+
+	return &mapSvc{
+		client: c,
+	}
+}
+
+func toLoc(obj maps.PlacesSearchResponse) []Location {
+	ret := make([]Location, 0, 10)
+	for i := 0; i < len(obj.Results); i++ {
+		place := obj.Results[i]
+		ret = append(ret, Location{
+			Name:     place.Name,
+			Address:  place.FormattedAddress,
+			Distance: 0.0,
+		})
+	}
+	return ret
 }

@@ -3,6 +3,8 @@ package api
 import (
 	"image"
 	"net/http"
+
+	"googlemaps.github.io/maps"
 )
 
 type attacher interface {
@@ -11,16 +13,16 @@ type attacher interface {
 
 // Map service --------------------------------------------------------------------
 
-type getAvailableLocationsOutput struct {
+type availableLocationsOutput struct {
 	Locations []Location `json:"locations"`
 	Err       error      `json:"err"`
 }
 
 type mapService interface {
 	attacher
-	// GetAvailableLocations takes the current location and returns a list of
+	// availableLocations takes the current location and returns a list of
 	// locations that satisfy the fast food challenge rules and any error.
-	getAvailableLocations(currentLocation string) getAvailableLocationsOutput
+	availableLocations(currentLocation *maps.LatLng, radius uint) availableLocationsOutput
 }
 
 // Receipt service -----------------------------------------------------------------
