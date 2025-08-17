@@ -21,13 +21,13 @@ type ReceiptData struct {
 
 type NutritionInfo struct {
 	Name     string
-	Calories int
+	Calories uint
 }
 
 type Settings struct {
 	// in miles, the maximum distance to search for restaurants
 	MaxRadius  float32
-	MaxPlayers int
+	MaxPlayers uint
 }
 
 type Player struct {
