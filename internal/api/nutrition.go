@@ -15,6 +15,23 @@ type nutritionSvc struct {
 	NUTRITIONIX_APP_KEY string
 }
 
+type nutritionixSearchInstantResult struct {
+	Photo struct {
+		Thumb string `json:"thumb"`
+	} `json:"photo"`
+	Nf_calories          uint   `json:"nf_calories"`
+	Serving_unit         string `json:"serving_unit"`
+	Serving_qty          uint   `json:"serving_qty"`
+	Brand_type           uint   `json:"brand_type"`
+	Region               uint   `json:"region"`
+	Nix_brand_id         string `json:"nix_brand_id"`
+	Brand_name           string `json:"brand_name"`
+	Food_name            string `json:"food_name"`
+	Brand_name_item_name string `json:"brand_name_item_name"`
+	Nix_item_id          string `json:"nix_item_id"`
+	Locale               string `json:"locale"`
+}
+
 func (svc *nutritionSvc) nutritionAutocomplete(query string) nutritionAutocompleteOutput {
 	v := url.Values{}
 	v.Add("query", query)
@@ -63,19 +80,18 @@ func (svc *nutritionSvc) nutritionAutocomplete(query string) nutritionAutocomple
 			Err:     err,
 		}
 	}
-	return nutritionAutocompleteOutput{
-		Results: dat.Branded,
-		Err:     nil,
+	out := make([]Item, len(dat.Branded))
+	for i := 0; i < len(dat.Branded); i++ {
+		v := dat.Branded[i]
+		out[i] = Item{
+			Name:         v.Food_name,
+			LocationName: v.Brand_name,
+			Price:        0,
+		}
 	}
-}
-
-func (svc *nutritionSvc) nutritionInfo(item Item) nutritionInfoOutput {
-	return nutritionInfoOutput{
-		Info: NutritionInfo{
-			Name:     "",
-			Calories: 0,
-		},
-		Err: nil,
+	return nutritionAutocompleteOutput{
+		Results: out,
+		Err:     nil,
 	}
 }
 
@@ -99,9 +115,6 @@ func (svc *nutritionSvc) attach(mux *http.ServeMux) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(200)
 		w.Write(jsonOut)
-	})
-	mux.HandleFunc("GET /api/nutritionInfo", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Hit: /api/nutritionInfo")
 	})
 }
 

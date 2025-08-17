@@ -38,31 +38,9 @@ type receiptService interface {
 
 // Nutrition service ---------------------------------------------------------------
 
-type nutritionixSearchInstantResult struct {
-	Photo struct {
-		Thumb string `json:"thumb"`
-	} `json:"photo"`
-	Nf_calories          uint   `json:"nf_calories"`
-	Serving_unit         string `json:"serving_unit"`
-	Serving_qty          uint   `json:"serving_qty"`
-	Brand_type           uint   `json:"brand_type"`
-	Region               uint   `json:"region"`
-	Nix_brand_id         string `json:"nix_brand_id"`
-	Brand_name           string `json:"brand_name"`
-	Food_name            string `json:"food_name"`
-	Brand_name_item_name string `json:"brand_name_item_name"`
-	Nix_item_id          string `json:"nix_item_id"`
-	Locale               string `json:"locale"`
-}
-
 type nutritionAutocompleteOutput struct {
-	Results []nutritionixSearchInstantResult `json:"results"`
-	Err     error                            `json:"err"`
-}
-
-type nutritionInfoOutput struct {
-	Info NutritionInfo `json:"info"`
-	Err  error         `json:"err"`
+	Results []Item `json:"results"`
+	Err     error  `json:"err"`
 }
 
 type nutritionService interface {
@@ -70,8 +48,6 @@ type nutritionService interface {
 	// nutritionAutocomplete takes a search query and gives a list of potential
 	// matches and any error.
 	nutritionAutocomplete(q string) nutritionAutocompleteOutput
-	// nutritionInfo gets the nutrition info of a given food item and any error.
-	nutritionInfo(item Item) nutritionInfoOutput
 }
 
 // Lobby service -------------------------------------------------------------------
