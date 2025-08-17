@@ -3,15 +3,14 @@ package main
 import (
 	"fmt"
 	"net/http"
-)
 
-func ping(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprint(w, "Pong!")
-}
+	"github.com/ech21/fast-food-app/internal/api"
+)
 
 func main() {
 	http.Handle("/", http.FileServer(http.Dir("./ui/dist")))
-	http.HandleFunc("/ping", ping)
+
+	api.AttachHandlers(http.DefaultServeMux)
 
 	fmt.Println("Listening on port 3000")
 	http.ListenAndServe(":3000", nil)
