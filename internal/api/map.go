@@ -22,6 +22,7 @@ func (svc *mapSvc) availableLocations(currentLocation *maps.LatLng, radius uint)
 		Query:    q,
 		Location: currentLocation,
 		Radius:   radius,
+		OpenNow:  true,
 	}
 	resp, err := svc.client.TextSearch(context.Background(), r)
 	if err != nil {
@@ -82,6 +83,7 @@ func (svc *mapSvc) attach(mux *http.ServeMux) {
 			http.Error(w, "Data could not be marshalled into json.", http.StatusInternalServerError)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(200)
 		w.Write(jsonOut)
 	})

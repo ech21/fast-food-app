@@ -20,7 +20,7 @@ type availableLocationsOutput struct {
 
 type mapService interface {
 	attacher
-	// availableLocations takes the current location and returns a list of
+	// availableLocations takes the current location and radius and returns a list of
 	// locations that satisfy the fast food challenge rules and any error.
 	availableLocations(currentLocation *maps.LatLng, radius uint) availableLocationsOutput
 }
