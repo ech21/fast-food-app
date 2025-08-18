@@ -51,14 +51,14 @@ type nutritionService interface {
 
 type lobbyService interface {
 	attacher
-	// New creates a new lobby.
-	New() *Lobby
-	// Join takes a lobby id and a Player object and tries to add the player to
+	// new creates a new lobby.
+	new() *Lobby
+	// join takes a lobby id and a Player object and tries to add the player to
 	// the lobby, or have the player rejoin if the player was already in the lobby.
 	// It returns the lobby joined and any error while trying to join.
-	Join(id string, player *Player) (lobby *Lobby, err error)
-	// Close shuts down a lobby and removes all players. It may return an error.
-	Close(lobby *Lobby) error
+	join(id string, player *Player) (lobby *Lobby, err error)
+	// close shuts down a lobby and removes all players. It may return an error.
+	close(lobby *Lobby) error
 }
 
 // Joined services object ----------------------------------------------------------
@@ -72,11 +72,13 @@ type svc struct {
 
 func Svc() svc {
 	return svc{
-		Map: newMapSvc(),
+		Map:   newMapSvc(),
+		Lobby: newLobbySvc(),
 	}
 }
 
 func AttachHandlers(mux *http.ServeMux) {
 	svc := Svc()
 	svc.Map.attach(mux)
+	svc.Lobby.attach(mux)
 }
