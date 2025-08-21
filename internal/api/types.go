@@ -29,8 +29,7 @@ type Settings struct {
 }
 
 type Player struct {
-	Id   string
-	Name string
+	Name string `json:"name"`
 }
 
 type Lobby struct {

@@ -84,7 +84,7 @@ func (svc *mapSvc) attach(mux *http.ServeMux) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 		w.Write(jsonOut)
 	})
 }
