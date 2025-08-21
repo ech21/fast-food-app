@@ -38,13 +38,16 @@ type receiptService interface {
 
 // Nutrition service ---------------------------------------------------------------
 
+type nutritionAutocompleteOutput struct {
+	Results []Item `json:"results"`
+	Err     error  `json:"err"`
+}
+
 type nutritionService interface {
 	attacher
-	// GetNutritionInfo gets the nutrition info of a given food item and any error.
-	GetNutritionInfo(item Item) struct {
-		Info NutritionInfo `json:"info"`
-		Err  error         `json:"err"`
-	}
+	// nutritionAutocomplete takes a search query and gives a list of potential
+	// matches and any error.
+	nutritionAutocomplete(q string) nutritionAutocompleteOutput
 }
 
 // Lobby service -------------------------------------------------------------------
@@ -72,8 +75,9 @@ type svc struct {
 
 func Svc() svc {
 	return svc{
-		Map:   newMapSvc(),
-		Lobby: newLobbySvc(),
+		Map:       newMapSvc(),
+		Lobby:     newLobbySvc(),
+		Nutrition: newNutritionSvc(),
 	}
 }
 
@@ -81,4 +85,5 @@ func AttachHandlers(mux *http.ServeMux) {
 	svc := Svc()
 	svc.Map.attach(mux)
 	svc.Lobby.attach(mux)
+	svc.Nutrition.attach(mux)
 }
