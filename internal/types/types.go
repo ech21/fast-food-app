@@ -1,4 +1,4 @@
-package api
+package types
 
 // A Location has details about a fast food restaurant
 type Location struct {
@@ -26,13 +26,4 @@ type Settings struct {
 	// in miles, the maximum distance to search for restaurants
 	MaxRadius  float64
 	MaxPlayers uint
-}
-
-type Player struct {
-	Name string `json:"name"`
-}
-
-type Lobby struct {
-	Id      string
-	Players []Player
 }

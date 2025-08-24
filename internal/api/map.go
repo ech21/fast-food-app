@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ech21/fast-food-app/internal/types"
 	"io"
 	"net/http"
 	"os"
@@ -108,11 +109,11 @@ func newMapSvc() *mapSvc {
 	}
 }
 
-func toLoc(obj maps.PlacesSearchResponse) []Location {
-	ret := make([]Location, 0, 10)
+func toLoc(obj maps.PlacesSearchResponse) []types.Location {
+	ret := make([]types.Location, 0, 10)
 	for i := 0; i < len(obj.Results); i++ {
 		place := obj.Results[i]
-		ret = append(ret, Location{
+		ret = append(ret, types.Location{
 			Name:     place.Name,
 			Address:  place.FormattedAddress,
 			Distance: 0.0,

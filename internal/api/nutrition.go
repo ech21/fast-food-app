@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+
+	"github.com/ech21/fast-food-app/internal/types"
 )
 
 type nutritionSvc struct {
@@ -80,10 +82,10 @@ func (svc *nutritionSvc) nutritionAutocomplete(query string) nutritionAutocomple
 			Err:     err,
 		}
 	}
-	out := make([]Item, len(dat.Branded))
+	out := make([]types.Item, len(dat.Branded))
 	for i := 0; i < len(dat.Branded); i++ {
 		v := dat.Branded[i]
-		out[i] = Item{
+		out[i] = types.Item{
 			Name:         v.Food_name,
 			LocationName: v.Brand_name,
 			Price:        0,

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/ech21/fast-food-app/internal/types"
 	"image"
 	"net/http"
 
@@ -14,8 +15,8 @@ type attacher interface {
 // Map service --------------------------------------------------------------------
 
 type availableLocationsOutput struct {
-	Locations []Location `json:"locations"`
-	Err       error      `json:"err"`
+	Locations []types.Location `json:"locations"`
+	Err       error            `json:"err"`
 }
 
 type mapService interface {
@@ -31,16 +32,16 @@ type receiptService interface {
 	attacher
 	// ParseReceipt takes an image and returns relevant info and any error.
 	ParseReceipt(image image.Image) struct {
-		Receipt ReceiptData `json:"receipt"`
-		Err     error       `json:"err"`
+		Receipt types.ReceiptData `json:"receipt"`
+		Err     error             `json:"err"`
 	}
 }
 
 // Nutrition service ---------------------------------------------------------------
 
 type nutritionAutocompleteOutput struct {
-	Results []Item `json:"results"`
-	Err     error  `json:"err"`
+	Results []types.Item `json:"results"`
+	Err     error        `json:"err"`
 }
 
 type nutritionService interface {
@@ -50,40 +51,23 @@ type nutritionService interface {
 	nutritionAutocomplete(q string) nutritionAutocompleteOutput
 }
 
-// Lobby service -------------------------------------------------------------------
-
-type lobbyService interface {
-	attacher
-	// new creates a new lobby.
-	new() *Lobby
-	// join takes a lobby id and a Player object and tries to add the player to
-	// the lobby, or have the player rejoin if the player was already in the lobby.
-	// It returns the lobby joined and any error while trying to join.
-	join(id string, player *Player) (lobby *Lobby, err error)
-	// close shuts down a lobby and removes all players. It may return an error.
-	close(lobby *Lobby) error
-}
-
 // Joined services object ----------------------------------------------------------
 
 type svc struct {
 	Map       mapService
 	Receipt   receiptService
 	Nutrition nutritionService
-	Lobby     lobbyService
 }
 
 func Svc() svc {
 	return svc{
 		Map:       newMapSvc(),
-		Lobby:     newLobbySvc(),
 		Nutrition: newNutritionSvc(),
 	}
 }
 
-func AttachHandlers(mux *http.ServeMux) {
+func Attach(mux *http.ServeMux) {
 	svc := Svc()
 	svc.Map.attach(mux)
-	svc.Lobby.attach(mux)
 	svc.Nutrition.attach(mux)
 }
