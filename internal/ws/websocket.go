@@ -3,11 +3,13 @@ package ws
 import (
 	"fmt"
 	"io"
+	"sync"
 
 	"golang.org/x/net/websocket"
 )
 
 type Server struct {
+	mu          sync.Mutex
 	connections map[*websocket.Conn]bool
 }
 
@@ -19,7 +21,17 @@ func NewServer() *Server {
 
 func (s *Server) HandleWs(ws *websocket.Conn) {
 	fmt.Println("New connection from client:", ws.RemoteAddr())
+	s.mu.Lock()
 	s.connections[ws] = true
+	s.mu.Unlock()
+
+	defer func() {
+		s.mu.Lock()
+		delete(s.connections, ws)
+		s.mu.Unlock()
+		ws.Close()
+		fmt.Println("Connection closed: ", ws.RemoteAddr())
+	}()
 	s.readLoop(ws)
 
 }
@@ -33,10 +45,16 @@ func (s *Server) readLoop(ws *websocket.Conn) {
 				break
 			}
 			fmt.Println("Read error:", err)
-			continue
+			return
 		}
-		msg := buf[:n]
-		fmt.Println(string(msg))
-		ws.Write([]byte("Message received."))
+		msg := string(buf[:n])
+		fmt.Println("received:", msg)
+
+		reply := []byte(`{"type":"server","payload":"Message received."}`)
+		if _, err := ws.Write(reply); err != nil {
+			fmt.Println("Write error:", err)
+			return
+		}
+
 	}
 }

@@ -6,7 +6,7 @@ export default function SocketDemo() {
   const wsRef = useRef<WebSocket>(null);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:3000');
+    const ws = new WebSocket('ws://localhost:3000/ws');
     wsRef.current = ws;
 
     ws.onopen = () => console.log('WS open');
